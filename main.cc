@@ -1,18 +1,26 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <vector>
 
 using namespace std;
-
-int board[9];
-int player1 = 1; // user
-int player2 = -1; // computer
 
 class Move{
     public:
         int score;
         int index;
+        int getScore();
+        Move();
 };
+
+int Move::getScore(){
+    return score;
+}
+
+Move::Move(void) {
+    score = 0;
+    index = 0;
+}
 
 bool winning(int board[9], int player){
     if (
@@ -49,50 +57,88 @@ void display(int board[9]){
     cout << endl;
 }
 
+int board[9] = {0,0,0,0,0,0,0,0,0};
+int player1 = 1; // user
+int player2 = -1; // computer
+int runs =0;
+
 int minimax(int newBoard[9], int player){
+    cout << runs << endl;
+    runs++;
     int availMoves[9] = {0,1,2,3,4,5,6,7,8};
     for (int i = 0; i < 9; i++){
         if (newBoard[i] != 0){ availMoves[i] = -1; }
     }
-
     if (winning(newBoard, 1)){
         return -10;
     } else if (winning(newBoard, -1)){
         return 10;
     } 
-    bool moves;
+    bool movePoss;
     for (int i =0; i < 9; i++){
-        if (newBoard[i] != -1) { moves = true;}
+        if (newBoard[i] != -1) { movePoss = true;}
     }
-    if (!moves){
+    if (!movePoss){
         return 0;
     }
 
-    moves = new Move[9];
-    int movesI = 0;
+    // vector <Move> moves(9);
+    Move moves[9];
+    int mI = 0;
     for (int i = 0; i < 9; i++){
         if (availMoves[i] == -1){
             continue;
         }
-        map <string, int> move;
-        move["index"] = availMoves[i];
+        Move move;
+        move.index = availMoves[i];
         newBoard[availMoves[i]] = player;
         if (player == -1){
             int result = minimax(newBoard, 1);
-            move["score"] = result;
+            move.score = result;
         } else {
             int result = minimax(newBoard, -1);
-            move["score"] = result;
+            move.score = result;
         }
 
         newBoard[availMoves[i]] = 0;
-        moves[movesI] = move;
-        movesI++;
+        moves[mI] = move;
+        mI++;
     }
-}
 
+    int bestMove;
+    // for (int i = 0; i < 9; i++){
+    //     cout << moves[i].index << " " << moves[i].score;
+    // }
+    if (player == -1){
+        int bestScore = -10000;
+        for (int i = 0; i < 9; i++){
+            if (availMoves[i] == -1){
+                continue;
+            }
+            if (moves[i].score > bestScore){
+                bestScore = moves[i].score;
+                bestMove = i;
+            }
+        }
+    } else {
+        int bestScore = 10000;
+        for (int i = 0; i < 9; i++){
+            if (availMoves[i] == -1){
+                continue;
+            }
+            if (moves[i].score < bestScore){
+                bestScore = moves[i].score;
+                bestMove = i;
+            }
+        }
+    }
+
+    return moves[bestMove].index;
+}
 
 int main(){
     display(board);
+    cout << minimax(board, -1) << endl;
+    cout << runs << endl;
     return 0;
 }
