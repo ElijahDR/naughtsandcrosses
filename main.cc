@@ -154,8 +154,11 @@ int main(){
     display(board);
     while (checkGame(board) == -1){
         cout << "Your move: ";
-        int move;
+        int move = 0;
         cin >> move;
+        if (move == 0){
+            break
+        }
         move--;
         int possibleMoves[9] = {0,0,0,0,0,0,0,0,0};
         for (int i = 0; i < 9; i++){
