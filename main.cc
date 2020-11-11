@@ -5,24 +5,6 @@
 
 using namespace std;
 
-class Move{
-    public:
-        int score;
-        int index;
-        int getScore();
-        Move();
-};
-
-int Move::getScore(){
-    return score;
-}
-
-Move::Move(void) {
-    score = 0;
-    index = 0;
-}
-
-
 int board[9] = {0,0,0,0,0,0,0,0,0};
 //int board[9] = {1,0,2,2,0,2,0,1,1};
 int human = 1; // user
@@ -157,7 +139,7 @@ int main(){
         int move = 0;
         cin >> move;
         if (move == 0){
-            break
+            break;
         }
         move--;
         int possibleMoves[9] = {0,0,0,0,0,0,0,0,0};
