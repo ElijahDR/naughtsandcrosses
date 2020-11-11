@@ -22,6 +22,25 @@ Move::Move(void) {
     index = 0;
 }
 
+
+int board[9] = {0,0,0,0,0,0,0,0,0};
+//int board[9] = {1,0,2,2,0,2,0,1,1};
+int human = 1; // user
+int ai = 2; // computer
+int runs =0;
+
+// Returns an array corresponding to the array, 0 for available move, -1 for taken.
+int* getAvailableMoves(int board[9]){
+    static int possibleMoves[9] = {0,0,0,0,0,0,0,0,0};
+    for (int i = 0; i < 9; i++){
+        if (board[i] != 0) {
+            possibleMoves[i] = -1;
+        }
+    }
+
+    return possibleMoves;
+}
+
 bool winning(int board[9], int player){
     if (
         (board[0] == player && board[1] == player && board[2] == player) ||
@@ -36,6 +55,33 @@ bool winning(int board[9], int player){
             return true;
     } else {
         return false;
+    }
+}
+
+// Checks game returning 1 if human wins, 2 if ai wins, 0 if tie and -1 if no result.
+int checkGame(int board[9]){
+    if (winning(board, human)){
+        return human;
+    } else if (winning(board, ai)){
+        return ai;
+    } else {
+        bool notFull = false;
+        int possibleMoves[9] = {0,0,0,0,0,0,0,0,0};
+        for (int i = 0; i < 9; i++){
+            if (board[i] != 0) {
+                possibleMoves[i] = -1;
+            }
+        }
+        for (int i = 0; i < 9; i++){
+            if (possibleMoves[i] == 0){
+                notFull = true;
+            }
+        }
+        if (!notFull){
+            return 0;
+        } else {
+            return -1;
+        }
     }
 }
 
@@ -57,88 +103,82 @@ void display(int board[9]){
     cout << endl;
 }
 
-int board[9] = {0,0,0,0,0,0,0,0,0};
-int player1 = 1; // user
-int player2 = -1; // computer
-int runs =0;
-
-int minimax(int newBoard[9], int player){
-    cout << runs << endl;
+int minimax(int board[9], int depth, bool isMax){
     runs++;
-    int availMoves[9] = {0,1,2,3,4,5,6,7,8};
-    for (int i = 0; i < 9; i++){
-        if (newBoard[i] != 0){ availMoves[i] = -1; }
-    }
-    if (winning(newBoard, 1)){
-        return -10;
-    } else if (winning(newBoard, -1)){
-        return 10;
-    } 
-    bool movePoss;
-    for (int i =0; i < 9; i++){
-        if (newBoard[i] != -1) { movePoss = true;}
-    }
-    if (!movePoss){
-        return 0;
-    }
-
-    // vector <Move> moves(9);
-    Move moves[9];
-    int mI = 0;
-    for (int i = 0; i < 9; i++){
-        if (availMoves[i] == -1){
-            continue;
+    int result = checkGame(board);
+    if (result != -1){
+        if (result == 1){
+            return -10;
+        } else if (result == 2){
+            return 10;
+        } else if (result == 0){
+            return 0;
         }
-        Move move;
-        move.index = availMoves[i];
-        newBoard[availMoves[i]] = player;
-        if (player == -1){
-            int result = minimax(newBoard, 1);
-            move.score = result;
-        } else {
-            int result = minimax(newBoard, -1);
-            move.score = result;
-        }
-
-        newBoard[availMoves[i]] = 0;
-        moves[mI] = move;
-        mI++;
     }
-
-    int bestMove;
-    // for (int i = 0; i < 9; i++){
-    //     cout << moves[i].index << " " << moves[i].score;
-    // }
-    if (player == -1){
-        int bestScore = -10000;
-        for (int i = 0; i < 9; i++){
-            if (availMoves[i] == -1){
-                continue;
-            }
-            if (moves[i].score > bestScore){
-                bestScore = moves[i].score;
-                bestMove = i;
+    int move = -1;
+    if (isMax){
+        int bestScore = -100000000;
+        for (int i = 0; i < 9; i ++){
+            if (board[i] == 0){
+                board[i] = ai;
+                int score = minimax(board, depth+1, false);
+                board[i] = 0;
+                if (score > bestScore){
+                    bestScore = score;
+                    move = i;
+                }
             }
         }
+        if (depth == 0){
+            return move;
+        }
+        return bestScore;
     } else {
-        int bestScore = 10000;
-        for (int i = 0; i < 9; i++){
-            if (availMoves[i] == -1){
-                continue;
-            }
-            if (moves[i].score < bestScore){
-                bestScore = moves[i].score;
-                bestMove = i;
+        int bestScore = 100000000;
+        for (int i = 0; i < 9; i ++){
+            if (board[i] == 0){
+                board[i] = human;
+                int score = minimax(board, depth+1, true);
+                board[i] = 0;
+                if (score < bestScore){
+                    bestScore = score;
+                    move = i;
+                }
             }
         }
+        return bestScore;
     }
-
-    return moves[bestMove].index;
 }
 
 int main(){
     display(board);
-    cout << minimax(board, -1) << endl;
-    cout << runs << endl;
+    while (checkGame(board) == -1){
+        cout << "Your move: ";
+        int move;
+        cin >> move;
+        move--;
+        int possibleMoves[9] = {0,0,0,0,0,0,0,0,0};
+        for (int i = 0; i < 9; i++){
+            if (board[i] != 0) {
+                possibleMoves[i] = -1;
+            }
+        }
+        if (possibleMoves[move] != 0){
+            cout << "Not possible... retry" << endl;
+            continue;
+        }
+        board[move] = human;
+        int aiMove = minimax(board, 0, true);
+        board[aiMove] = ai;
+        display(board);
+    }
+    int result = checkGame(board);
+    if (result == 0){
+        cout << "Tie!" << endl;
+    } else if (result == human){
+        cout << "You won!" << endl;
+    } else if (result == ai){
+        cout << "You lost! AI won" << endl;
+    }
     return 0;
 }
